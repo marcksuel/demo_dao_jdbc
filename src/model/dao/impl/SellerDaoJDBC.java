@@ -26,6 +26,7 @@ public class SellerDaoJDBC implements SellerDao {
 	@Override
 	public void insert(Seller s) {
 		PreparedStatement st = null;
+		ResultSet rs=null;
 		try {
 			
 			st = conn.prepareStatement(" INSERT INTO seller " +
@@ -39,8 +40,9 @@ public class SellerDaoJDBC implements SellerDao {
 			st.setInt(5, s.getDepartment().getId());
 			
 			Integer rowsAffected = st.executeUpdate();
+			
 			if(rowsAffected >0) {
-				ResultSet rs = st.getGeneratedKeys();
+				rs = st.getGeneratedKeys();
 				if(rs.next()) {
 					Integer id = rs.getInt(1);
 					s.setId(id);
@@ -52,20 +54,56 @@ public class SellerDaoJDBC implements SellerDao {
 			throw new DbException(e.getMessage());
 		}finally {
 			DB.closeStatement(st);
+			DB.closeResultSet(rs);
 		}
 		
 
 	}
 
 	@Override
-	public void update(Seller d) {
-		// TODO Auto-generated method stub
+	public void update(Seller s) {
+		PreparedStatement st = null;
+		try {
+			
+			st = conn.prepareStatement(
+					"UPDATE seller "+
+					" SET Name = ?, Email = ?, BirthDate = ?, BaseSalary = ?, DepartmentId = ? "+
+					"WHERE Id = ? ", Statement.RETURN_GENERATED_KEYS);
+			st.setString(1, s.getName());
+			st.setString(2, s.getEmail());
+			st.setDate(3, new java.sql.Date(s.getBirthDate().getTime()));
+			st.setDouble(4, s.getBaseSalary());
+			st.setInt(5, s.getDepartment().getId());
+			st.setInt(6, s.getId());
 
+			
+			Integer rowsAffected = st.executeUpdate();
+			if(rowsAffected >0) {
+				
+			}else {
+				throw new DbException("Unexpected error! No rows affected");
+			}
+		}catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		}finally {
+			DB.closeStatement(st);
+		}
 	}
 
 	@Override
 	public void deleteById(Integer id) {
-		
+		PreparedStatement st = null;
+		try {
+			st = conn.prepareStatement(
+					" DELETE FROM seller WHERE id = ?"
+					);
+			st.setInt(1, id);
+			st.executeUpdate();
+		}catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		}finally {
+			DB.closeStatement(st);
+		}
 
 	}
 

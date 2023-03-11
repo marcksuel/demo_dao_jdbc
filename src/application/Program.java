@@ -26,9 +26,19 @@ public class Program {
 		list = sellerDao.findAll();
 		list.forEach(System.out::println);
 		
-		System.out.println("____TESTE 3: Insert");
+		System.out.println("____TESTE 4: Insert");
 		Seller s = new Seller(null,"Max","max@gmail", new Date(), 4000.0, d);
 		sellerDao.insert(s);
 		System.out.println("New Seller ID: " + s.getId());
+		
+		System.out.println("____TESTE 5: Insert");
+		seller = sellerDao.findById(1);
+		sellerDao.update(seller);
+		System.out.println(" Insert Complete");
+		
+		System.out.println("____TESTE 6: Delete");
+		sellerDao.deleteById(5);
+		System.out.println(" Delete Complete");
+		
 	}
 }
