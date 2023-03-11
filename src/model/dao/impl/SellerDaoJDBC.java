@@ -4,8 +4,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import db.DB;
 import db.DbException;
 import model.dao.SellerDao;
 import model.entities.Department;
@@ -55,6 +59,9 @@ public class SellerDaoJDBC implements SellerDao {
 			return null;
 		} catch (SQLException e) {
 			throw new DbException(e.getMessage());
+		}finally {
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
 		}
 	}
 
@@ -81,5 +88,41 @@ public class SellerDaoJDBC implements SellerDao {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public List<Seller> findByDepartment(Department d) {
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.prepareStatement(
+					" SELECT seller.*,department.Name as DepName " +
+					" FROM seller INNER JOIN department "+
+					" ON seller.DepartmentId = department.Id "+
+					" WHERE DepartmentId = ? "+
+					" ORDER BY Name ");
+			st.setInt(1, d.getId());
+			rs = st.executeQuery();
+			
+			List<Seller> sList = new ArrayList<>();
+			Map<Integer, Department> map  = new HashMap();
+			while(rs.next()) {
+				Department dep = map.get(rs.getInt("DepartmentId")); // verifica se ja n existe um departamento
+				if(dep == null) {// se n exister adicionaro  novo departamento
+					dep = instantiateDepartment(rs);
+					map.put(rs.getInt("DepartmentId"),dep);
+				}
+				
+				Seller s = instantiateSeller(rs,d);
+				sList.add(s);
+			}
+			return sList;
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		}finally {
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
+		}
+	}
+	
 
 }
